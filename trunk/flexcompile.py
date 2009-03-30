@@ -22,7 +22,7 @@ def slurp_chunk(proc, conn):
         if chunk.endswith("\n(fcsh)"):
             return chunk
 
-def daemon(debug=False):
+def daemon(fcsh, debug=False):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((HOST, PORT))
@@ -53,7 +53,7 @@ def daemon(debug=False):
                 proc.wait()
             os.chdir(curdir)
             if debug: print "doing popen"
-            proc = subprocess.Popen(("/usr/local/flex/bin/fcsh",),
+            proc = subprocess.Popen((fcsh,),
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
@@ -73,7 +73,7 @@ def daemon(debug=False):
         if debug: print "closed connection"
 
 
-def sendit(cmd, start_daemon_if_missing=True):
+def run(cmd, start_daemon_if_missing=True):
     cmd = "cd %s ; %s" % (os.getcwd(), cmd)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -84,9 +84,9 @@ def sendit(cmd, start_daemon_if_missing=True):
             os.system(cmd)
             return
         print "No daemon process, creating one..."
-        os.system("%s -daemon &" % sys.argv[0])
+        os.system("%s -daemon %s &" % (sys.argv[0], sys.argv[1]))
         time.sleep(2)
-        return sendit(cmd, start_daemon_if_missing=False)
+        return run(cmd, start_daemon_if_missing=False)
     s.send(cmd)
     result = ""
     while True:
@@ -97,18 +97,16 @@ def sendit(cmd, start_daemon_if_missing=True):
         if result.endswith("\nDone\n"):
             break
     print "All done."
-        
 
+if len(sys.argv) < 3:
+    print "Usgae: python flexcomile.py fsch_path mxmlc_command"
+    print "e.g: python flexcomile.py  /path/to/fcsh mxmlc /path/to/foo.mxml -o /path/to/foo.swf"
 
-
-# import pdb ; pdb.set_trace()
-if sys.argv[1] == "-daemon":
-    daemon()
+elif sys.argv[1] == "-daemon":
+    daemon(sys.argv[2])
 else:
-    cmd = ' '.join(sys.argv[1:])
+    cmd = ' '.join(sys.argv[2:])
     if getpass.getuser() in ['release', 'root']:
         os.system(cmd)
     else:
-        sendit(cmd)
-                                    
-                
+        run(cmd)
