@@ -99,8 +99,8 @@ def run(cmd, start_daemon_if_missing=True):
     print "All done."
 
 if len(sys.argv) < 3:
-    print "Usgae: python flexcomile.py fsch_path mxmlc_command"
-    print "e.g: python flexcomile.py  /path/to/fcsh mxmlc /path/to/foo.mxml -o /path/to/foo.swf"
+    print "Usage: python flexcompile.py fcsh_path mxmlc_command"
+    print "e.g: python flexcompile.py  /path/to/fcsh mxmlc /path/to/foo.mxml -o /path/to/foo.swf"
 
 elif sys.argv[1] == "-daemon":
     daemon(sys.argv[2])
